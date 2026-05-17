@@ -1618,57 +1618,97 @@ function createRiverShip(riverCurve, options = {}) {
   });
 }
 
-function createMilitaryShip(riverCurve) {
-  const shipRatio = 0.7;
+function createGalileeFishingBoat(riverCurve) {
+  // Traditional wooden fishing boat on the Sea of Galilee — single mast,
+  // furled sail, fishing nets piled on deck. Echoes the ancient style of
+  // boats fished from Yam Kinneret.
+  const shipRatio = 0.06;
   const riverPosition = riverCurve.getPointAt(shipRatio);
   const riverTangent = riverCurve.getTangentAt(shipRatio).normalize();
   const riverRight = new THREE.Vector3(riverTangent.z, 0, -riverTangent.x).normalize();
   const shipGroup = new THREE.Group();
-  shipGroup.position.copy(riverPosition).add(riverRight.multiplyScalar(0.85));
-  shipGroup.position.y = waterSurfaceY + 0.24;
+  shipGroup.position.copy(riverPosition).add(riverRight.multiplyScalar(-0.4));
+  shipGroup.position.y = waterSurfaceY + 0.2;
   setYawRotationFromTangent(shipGroup, riverTangent);
-  shipGroup.scale.setScalar(1.14);
+  shipGroup.scale.setScalar(0.92);
 
-  const hullColor = 0x71869a;
-  const deckColor = 0xc8d4de;
-  const darkNavy = 0x18355e;
-  addBoxToGroup(shipGroup, 1.04, 0.34, 4.7, hullColor, 0, 0.18, 0, { roughness: 0.46, metalness: 0.05 });
-  addBoxToGroup(shipGroup, 0.74, 0.24, 0.96, hullColor, 0, 0.18, -2.15, { roughness: 0.46, metalness: 0.05 });
-  addBoxToGroup(shipGroup, 0.74, 0.24, 0.96, hullColor, 0, 0.18, 2.15, { roughness: 0.46, metalness: 0.05 });
-  addBoxToGroup(shipGroup, 0.9, 0.11, 4.2, deckColor, 0, 0.42, 0, { roughness: 0.32, metalness: 0.04 });
-  addBoxToGroup(shipGroup, 0.56, 0.46, 0.82, 0xe7eef4, 0, 0.73, -0.2, { roughness: 0.36, metalness: 0.03 });
-  addBoxToGroup(shipGroup, 0.42, 0.34, 0.62, deckColor, 0, 1.1, 0.08, { roughness: 0.34, metalness: 0.04 });
-  addCylinderToGroup(shipGroup, 0.04, 0.04, 1.45, darkNavy, 0, 1.55, 0.42, 10, { roughness: 0.32, metalness: 0.06 });
-  addBoxToGroup(shipGroup, 0.44, 0.18, 0.035, toyPalette.red, 0.22, 2.12, 0.42, { roughness: 0.3, metalness: 0.02 });
+  const hullColor = toyPalette.wood;
+  const deckColor = 0xc6995c;
+  const trimColor = toyPalette.brick;
+  // Wooden hull — long, with raised prow and stern.
+  addBoxToGroup(shipGroup, 0.88, 0.32, 3.4, hullColor, 0, 0.18, 0, { roughness: 0.78, metalness: 0.02 });
+  // Bow (raised prow).
+  addBoxToGroup(shipGroup, 0.78, 0.4, 0.7, hullColor, 0, 0.28, -1.85, { roughness: 0.78, metalness: 0.02 });
+  // Stern.
+  addBoxToGroup(shipGroup, 0.78, 0.4, 0.5, hullColor, 0, 0.28, 1.75, { roughness: 0.78, metalness: 0.02 });
+  // Deck (paler).
+  addBoxToGroup(shipGroup, 0.76, 0.08, 3.0, deckColor, 0, 0.38, 0, { roughness: 0.72, metalness: 0.02 });
+  // Stripe of red trim along the gunwale.
+  addBoxToGroup(shipGroup, 0.92, 0.06, 3.5, trimColor, 0, 0.36, 0, { roughness: 0.5 });
+  // Single tall mast.
+  addCylinderToGroup(shipGroup, 0.05, 0.06, 2.4, hullColor, 0, 1.42, -0.3, 10, { roughness: 0.74, metalness: 0.02 });
+  // Furled-sail bundle around the mast.
+  addCylinderToGroup(shipGroup, 0.16, 0.12, 1.4, toyPalette.cream, 0, 1.5, -0.32, 10, { roughness: 0.7, metalness: 0.02 });
+  // Crossbeam (the yard).
+  addBoxToGroup(shipGroup, 1.6, 0.05, 0.06, hullColor, 0, 2.34, -0.32, { roughness: 0.74 });
+  // Small Israeli flag at the mast top.
+  const flagMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.34, 0.22),
+    new THREE.MeshStandardMaterial({
+      color: 0xfdfaf2,
+      roughness: 0.7,
+      metalness: 0.02,
+      side: THREE.DoubleSide,
+    }),
+  );
+  flagMesh.position.set(0.18, 2.5, -0.32);
+  flagMesh.rotation.y = Math.PI * 0.5;
+  shipGroup.add(flagMesh);
+  // Flag stripes.
+  [2.6, 2.4].forEach((fy) => {
+    const stripe = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.34, 0.04),
+      new THREE.MeshStandardMaterial({
+        color: toyPalette.safedBlue,
+        roughness: 0.46,
+        metalness: 0.04,
+        side: THREE.DoubleSide,
+      }),
+    );
+    stripe.position.set(0.182, fy, -0.32);
+    stripe.rotation.y = Math.PI * 0.5;
+    shipGroup.add(stripe);
+  });
+  // Magen David on flag.
+  const flagStar1 = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.1, 0.1),
+    new THREE.MeshStandardMaterial({
+      color: toyPalette.safedBlue,
+      roughness: 0.46,
+      metalness: 0.04,
+      side: THREE.DoubleSide,
+    }),
+  );
+  flagStar1.position.set(0.183, 2.5, -0.32);
+  flagStar1.rotation.y = Math.PI * 0.5;
+  flagStar1.rotation.x = Math.PI * 0.25;
+  shipGroup.add(flagStar1);
+  const flagStar2 = flagStar1.clone();
+  flagStar2.rotation.x = -Math.PI * 0.25;
+  shipGroup.add(flagStar2);
 
-  [-1.42, 1.42].forEach((turretZ) => {
-    addCylinderToGroup(shipGroup, 0.21, 0.23, 0.14, deckColor, 0, 0.58, turretZ, 18, {
-      roughness: 0.34,
-      metalness: 0.06,
-    });
-    addBoxToGroup(shipGroup, 0.1, 0.08, 0.78, darkNavy, 0, 0.65, turretZ + (turretZ < 0 ? -0.42 : 0.42), {
-      roughness: 0.3,
-      metalness: 0.08,
-    });
+  // Piles of fishing nets on the deck.
+  [-0.6, 0.8].forEach((netZ) => {
+    const netPile = new THREE.Mesh(
+      new THREE.SphereGeometry(0.22, 12, 8),
+      createToyMaterial(toyPalette.parchment, 0.84, 0.01),
+    );
+    netPile.position.set(0, 0.46, netZ);
+    netPile.scale.set(1.2, 0.4, 1.0);
+    shipGroup.add(netPile);
   });
 
-  [-0.36, 0.36].forEach((sideX) => {
-    [-1.95, -0.72, 0.76, 1.95].forEach((portholeZ) => {
-      const portholeMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.055, 10, 8),
-        new THREE.MeshStandardMaterial({
-          color: 0xd8f7ff,
-          emissive: 0x63beff,
-          emissiveIntensity: 0.2,
-          roughness: 0.18,
-          metalness: 0.03,
-        }),
-      );
-      portholeMesh.position.set(sideX, 0.28, portholeZ);
-      shipGroup.add(portholeMesh);
-    });
-  });
-
+  // Wake.
   const wakeMaterial = new THREE.MeshBasicMaterial({
     color: 0xd8f7ff,
     transparent: true,
@@ -1676,9 +1716,9 @@ function createMilitaryShip(riverCurve) {
     depthWrite: false,
     side: THREE.DoubleSide,
   });
-  [-0.46, 0.46].forEach((wakeX) => {
-    const wakeMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 2.2), wakeMaterial.clone());
-    wakeMesh.position.set(wakeX, 0.02, 2.95);
+  [-0.36, 0.36].forEach((wakeX) => {
+    const wakeMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 1.8), wakeMaterial.clone());
+    wakeMesh.position.set(wakeX, 0.02, 2.2);
     wakeMesh.rotation.x = -Math.PI * 0.5;
     wakeMesh.rotation.z = wakeX < 0 ? -0.08 : 0.08;
     shipGroup.add(wakeMesh);
@@ -1956,7 +1996,7 @@ function createRiverAndRoads() {
     bobPhase: 3.1,
     scale: 0.84,
   });
-  createMilitaryShip(riverCurve);
+  createGalileeFishingBoat(riverCurve);
 }
 
 function createParkPatch(centerX, centerZ, spanX, spanZ, treeCount, withFlowers = true) {
@@ -3449,7 +3489,7 @@ function createLandmarks() {
 }
 
 const outerRoute = {
-  name: "Capital Loop",
+  name: "Holy Cities Loop",
   startingSegmentKey: "southReturn",
   segments: {
     westScenic: createCurveSegment("westScenic", [
@@ -3518,7 +3558,7 @@ const outerRoute = {
 };
 
 const tubeRoute = {
-  name: "Tube Circle",
+  name: "Galilee Circle",
   startingSegmentKey: "tubeCircle",
   segments: {
     tubeCircle: createCurveSegment(
@@ -3545,7 +3585,7 @@ const tubeRoute = {
 };
 
 const docklandsRoute = {
-  name: "Docklands Loop",
+  name: "Pilgrim Loop",
   startingSegmentKey: "docklandsLoop",
   segments: {
     docklandsLoop: createCurveSegment(
@@ -3676,7 +3716,8 @@ function createFestiveLights() {
     outerRoute.segments.eastBridge.curve,
     docklandsRoute.segments.docklandsLoop.curve,
   ];
-  const bulbColors = [0xef4343, 0xffdc6c, 0x59c8ff, 0x47c95b, 0xffffff];
+  // Chanukah palette — blue/white/gold. Lit in Chanukah and Havdalah modes.
+  const bulbColors = [0x1f5fa8, 0xffffff, 0xd4af37, 0x4a9dd6, 0xf2dca2];
 
   lightCurves.forEach((lightCurve, curveIndex) => {
     const bulbCount = curveIndex === 3 ? 28 : 24;
